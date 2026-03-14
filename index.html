@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>5. osztályos szójelentés gyakorló</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(to bottom, #e0f2fe, #ffffff);
+      color: #1e293b;
+    }
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .card {
+      background: white;
+      border-radius: 24px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    h1 {
+      margin-top: 0;
+      font-size: 2rem;
+    }
+    .subtitle {
+      color: #475569;
+      line-height: 1.6;
+    }
+    .topics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .topic-btn, .action-btn, .option-btn {
+      border: none;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: 0.2s;
+      font-size: 1rem;
+    }
+    .topic-btn {
+      padding: 12px;
+      background: #e2e8f0;
+      color: #334155;
+      font-weight: bold;
+    }
+    .topic-btn.active {
+      background: #1e293b;
+      color: white;
+    }
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .meta-label {
+      color: #64748b;
+      font-size: 0.95rem;
+    }
+    .meta-value {
+      font-size: 1.1rem;
+      font-weight: bold;
+    }
+    .progress {
+      width: 100%;
+      height: 16px;
+      background: #e2e8f0;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+    .progress-bar {
+      height: 100%;
+      background: #334155;
+      width: 0%;
+    }
+    .badge {
+      display: inline-block;
+      background: #dbeafe;
+      color: #1d4ed8;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-weight: bold;
+      margin-bottom: 16px;
+    }
+    .question {
+      font-size: 1.7rem;
+      font-weight: bold;
+      line-height: 1.4;
+      margin-bottom: 20px;
+    }
+    .options {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .option-btn {
+      text-align: left;
+      padding: 16px;
+      background: white;
+      border: 2px solid #cbd5e1;
+      min-height: 78px;
+    }
+    .option-btn:hover { border-color: #64748b; }
+    .option-btn.selected {
+      border-color: #1e293b;
+      background: #f8fafc;
+    }
+    .option-btn.correct {
+      border-color: #16a34a;
+      background: #f0fdf4;
+    }
+    .option-btn.wrong {
+      border-color: #dc2626;
+      background: #fef2f2;
+    }
+    .feedback {
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 18px;
+      line-height: 1.6;
+    }
+    .feedback.good {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+    }
+    .feedback.warn {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+    }
+    .bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .score {
+      font-size: 1.1rem;
+      font-weight: bold;
+    }
+    .action-btn {
+      padding: 12px 20px;
+      font-weight: bold;
+      color: white;
+      background: #1e293b;
+    }
+    .action-btn.secondary {
+      background: #0284c7;
+    }
+    .action-btn:disabled {
+      background: #cbd5e1;
+      color: #64748b;
+      cursor: not-allowed;
+    }
+    .center {
+      text-align: center;
+      padding: 24px 0;
+    }
+    .emoji {
+      font-size: 4rem;
+    }
+    @media (max-width: 640px) {
+      .question { font-size: 1.35rem; }
+      h1 { font-size: 1.7rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h1>5. osztályos szójelentés gyakorló</h1>
+      <div class="subtitle">Gyakorold az egyjelentésű, többjelentésű, azonos alakú és rokon értelmű szavakat!</div>
+      <div class="topics" id="topicButtons"></div>
+    </div>
+
+    <div class="card" id="quizCard"></div>
+  </div>
+
+  <script>
+    const allQuestions = [
+      { id: 1, topic: "egyjelentésű", prompt: "Melyik szó egyjelentésű?", options: ["kar", "egér", "villamos", "ceruza"], correct: "ceruza", explanation: "A 'ceruza' ebben a feladatsorban egyetlen, jól körülhatárolt jelentéssel szerepel." },
+      { id: 2, topic: "többjelentésű", prompt: "Melyik szó többjelentésű?", options: ["levél", "ovális", "katicabogár", "villámcsapás"], correct: "levél", explanation: "A 'levél' jelenthet fáról lehulló levelet és üzenetet is." },
+      { id: 3, topic: "azonos alakú", prompt: "Melyik szó lehet azonos alakú?", options: ["vár", "szék", "tányér", "iskola"], correct: "vár", explanation: "A 'vár' lehet főnév is és ige is." },
+      { id: 4, topic: "rokon értelmű", prompt: "Melyik szó rokon értelmű párja a 'szép' szónak?", options: ["rút", "gyönyörű", "hangos", "lomha"], correct: "gyönyörű", explanation: "A 'szép' és a 'gyönyörű' hasonló jelentésű szavak." },
+      { id: 5, topic: "egyjelentésű", prompt: "Melyik mondatban szerepel egyjelentésű szó (KIEMELT)?", options: ["A SZARVASBOGÁR az asztalon van.", "A KAROM fáj.", "Leesett egy LEVÉL.", "A NYÚL szalad."], correct: "A szarvasbogár az asztalon van.", explanation: "A szarvasbogár összetett szó." },
+      { id: 6, topic: "többjelentésű", prompt: "Melyik szónak van több, egymáshoz kapcsolódó jelentése?", options: ["kar", "hegedű", "padló", "fakanál"], correct: "kar", explanation: "A 'kar' lehet testrész, de egy tárgy kiálló része is." },
+      { id: 7, topic: "azonos alakú", prompt: "Melyik példa mutat azonos alakúságot?", options: ["mese – történet", "fut a gyerek – fut a harisnya", "fa – bokor", "szép – csúnya"], correct: "fut a gyerek – fut a harisnya", explanation: "Ugyanaz az alak jelenik meg, de a jelentések eltérnek." },
+      { id: 8, topic: "rokon értelmű", prompt: "Melyik a 'siet' rokon értelmű párja?", options: ["késik", "igyekszik", "álldogál", "nézelődik"], correct: "igyekszik", explanation: "A 'siet' és az 'igyekszik' hasonló jelentésűek." },
+      { id: 9, topic: "többjelentésű", prompt: "Melyik szó többjelentésű a következők közül?", options: ["gyökér", "kanapé", "radiátor", "uzsonna"], correct: "gyökér", explanation: "A 'gyökér' lehet növényi rész és matematikai fogalom is." },
+      { id: 10, topic: "rokon értelmű", prompt: "Melyik szó illik a 'bátor' helyére rokon értelmű szóként? 'A ___ kisfiú megszólalt a színpadon.'", options: ["félénk", "merész", "csendes", "lassú"], correct: "merész", explanation: "A 'bátor' és a 'merész' rokon értelmű szavak." },
+      { id: 11, topic: "egyjelentésű", prompt: "Melyik szó egyjelentésű ebben a sorban?", options: ["vár", "zár", "bodza", "kar"], correct: "bodza", explanation: "A 'bodza' itt egyjelentésű szóként szerepel." },
+      { id: 12, topic: "azonos alakú", prompt: "Melyik mondatpárban ugyanaz a szóalak két külön jelentésben szerepel?", options: ["Olvasok egy könyvet. / Lapozom a könyvet.", "Várom a buszt. / Régi vár áll a hegyen.", "A macska alszik. / A kutya ugat.", "Szép a virág. / Illatos a virág."], correct: "Várom a buszt. / Régi vár áll a hegyen.", explanation: "A 'vár' egyik esetben ige, a másikban főnév." },
+      { id: 13, topic: "rokon értelmű", prompt: "Melyik szó rokon értelmű párja az 'okos' szónak?", options: ["ügyes", "értelmes", "morgós", "makacs"], correct: "értelmes", explanation: "Az 'okos' és az 'értelmes' jelentése közel áll egymáshoz." },
+      { id: 14, topic: "többjelentésű", prompt: "Melyik szó jelenthet tárgyat és testrészt is?", options: ["láb", "hó", "kert", "szekrény"], correct: "láb", explanation: "A 'láb' lehet testrész, de egy asztalnak vagy széknek is van lába." },
+      { id: 15, topic: "egyjelentésű", prompt: "Melyik szó egyjelentésű ebben a sorban?", options: ["egér", "nyelv", "fazék", "korona"], correct: "fazék", explanation: "A 'fazék' itt egyjelentésű szóként szerepel." },
+      { id: 16, topic: "rokon értelmű", prompt: "Melyik a 'vidám' rokon értelmű párja?", options: ["szomorú", "derűs", "fáradt", "komor"], correct: "derűs", explanation: "A 'vidám' és a 'derűs' hasonló jelentésűek." }
+    ];
+
+    const topicLabels = {
+      mind: "Összes",
+      "egyjelentésű": "Egyjelentésű szavak",
+      "többjelentésű": "Többjelentésű szavak",
+      "azonos alakú": "Azonos alakú szavak",
+      "rokon értelmű": "Rokon értelmű szavak"
+    };
+
+    let selectedTopic = "mind";
+    let currentIndex = 0;
+    let selectedAnswer = null;
+    let showResult = false;
+    let score = 0;
+    let finished = false;
+
+    function getQuestions() {
+      return selectedTopic === "mind"
+        ? allQuestions
+        : allQuestions.filter(q => q.topic === selectedTopic);
+    }
+
+    function resetQuiz(topic = selectedTopic) {
+      selectedTopic = topic;
+      currentIndex = 0;
+      selectedAnswer = null;
+      showResult = false;
+      score = 0;
+      finished = false;
+      render();
+    }
+
+    function handleCheck() {
+      const questions = getQuestions();
+      const currentQuestion = questions[currentIndex];
+      if (!selectedAnswer) return;
+      showResult = true;
+      if (selectedAnswer === currentQuestion.correct) {
+        score++;
+      }
+      render();
+    }
+
+    function handleNext() {
+      const questions = getQuestions();
+      if (currentIndex + 1 < questions.length) {
+        currentIndex++;
+        selectedAnswer = null;
+        showResult = false;
+      } else {
+        finished = true;
+      }
+      render();
+    }
+
+    function renderTopics() {
+      const container = document.getElementById('topicButtons');
+      container.innerHTML = '';
+
+      Object.entries(topicLabels).forEach(([key, label]) => {
+        const btn = document.createElement('button');
+        btn.className = 'topic-btn' + (selectedTopic === key ? ' active' : '');
+        btn.textContent = label;
+        btn.onclick = () => resetQuiz(key);
+        container.appendChild(btn);
+      });
+    }
+
+    function renderQuiz() {
+      const quizCard = document.getElementById('quizCard');
+      const questions = getQuestions();
+      const currentQuestion = questions[currentIndex];
+      const progress = Math.round(((currentIndex + 1) / questions.length) * 100);
+
+      if (finished) {
+        let message = "Semmi baj, gyakorlással egyre ügyesebb leszel!";
+        if (score === questions.length) message = "Hibátlan munka!";
+        else if (score >= Math.ceil(questions.length * 0.75)) message = "Nagyon szép teljesítmény!";
+        else if (score >= Math.ceil(questions.length * 0.5)) message = "Szép munka, még egy kis gyakorlás, és még jobb lesz!";
+
+        quizCard.innerHTML = `
+          <div class="center">
+            <div class="emoji">🎉</div>
+            <h2>Kész vagy!</h2>
+            <p class="score">Eredményed: ${score} / ${questions.length}</p>
+            <p>${message}</p>
+            <div class="bottom" style="justify-content:center; margin-top:20px;">
+              <button class="action-btn" onclick="resetQuiz(selectedTopic)">Ugyanez újra</button>
+              <button class="action-btn secondary" onclick="resetQuiz('mind')">Összes témakör újra</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      quizCard.innerHTML = `
+        <div class="meta">
+          <div>
+            <div class="meta-label">Témakör</div>
+            <div class="meta-value">${topicLabels[selectedTopic]}</div>
+          </div>
+          <div>
+            <div class="meta-label">Állás</div>
+            <div class="meta-value">${currentIndex + 1} / ${questions.length}</div>
+          </div>
+        </div>
+
+        <div class="progress"><div class="progress-bar" style="width:${progress}%"></div></div>
+
+        <div class="badge">${currentQuestion.topic}</div>
+        <div class="question">${currentQuestion.prompt}</div>
+        <div class="options" id="options"></div>
+        <div id="feedbackArea"></div>
+
+        <div class="bottom">
+          <div class="score">Pontszám: ${score}</div>
+          <button class="action-btn ${showResult ? 'secondary' : ''}" id="mainActionBtn" ${!showResult && !selectedAnswer ? 'disabled' : ''}>
+            ${showResult ? (currentIndex + 1 < questions.length ? 'Következő' : 'Eredményem') : 'Ellenőrzés'}
+          </button>
+        </div>
+      `;
+
+      const optionsContainer = document.getElementById('options');
+      currentQuestion.options.forEach(option => {
+        const btn = document.createElement('button');
+        let className = 'option-btn';
+        const isSelected = selectedAnswer === option;
+        const isCorrect = showResult && option === currentQuestion.correct;
+        const isWrong = showResult && isSelected && option !== currentQuestion.correct;
+
+        if (isCorrect) className += ' correct';
+        else if (isWrong) className += ' wrong';
+        else if (isSelected) className += ' selected';
+
+        btn.className = className;
+        btn.textContent = option;
+        btn.onclick = () => {
+          if (!showResult) {
+            selectedAnswer = option;
+            render();
+          }
+        };
+        optionsContainer.appendChild(btn);
+      });
+
+      const feedbackArea = document.getElementById('feedbackArea');
+      if (showResult) {
+        const good = selectedAnswer === currentQuestion.correct;
+        feedbackArea.innerHTML = `
+          <div class="feedback ${good ? 'good' : 'warn'}">
+            <div><strong>${good ? 'Ügyes vagy!' : 'Nézd meg még egyszer!'}</strong></div>
+            <div>Helyes válasz: <strong>${currentQuestion.correct}</strong></div>
+            <div>${currentQuestion.explanation}</div>
+          </div>
+        `;
+      }
+
+      document.getElementById('mainActionBtn').onclick = showResult ? handleNext : handleCheck;
+    }
+
+    function render() {
+      renderTopics();
+      renderQuiz();
+    }
+
+    render();
+  </script>
+</body>
+</html>
